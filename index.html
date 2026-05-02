@@ -1,0 +1,1809 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0a0a">
+<title>Apex Matrix | سيطّر على اللعبة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #f0d080;
+    --gold-dark: #8a6a1f;
+    --black: #080808;
+    --dark: #0f0f0f;
+    --dark2: #141414;
+    --dark3: #1a1a1a;
+    --dark4: #222;
+    --white: #f0ede8;
+    --gray: #888;
+    --red: #e03030;
+    --green: #1db954;
+    --blue: #1e90ff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Tajawal', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* ===== BACKGROUND GRID ===== */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--dark); }
+  ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
+
+  /* ===== NAVBAR ===== */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    background: rgba(8,8,8,0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+    padding: 0 20px;
+    height: 65px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 20px;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 2px;
+  }
+
+  .nav-logo span {
+    display: block;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 4px;
+    opacity: 0.7;
+    -webkit-text-fill-color: var(--gold);
+    margin-top: -4px;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 6px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--gray);
+    text-decoration: none;
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    transition: all 0.3s;
+    border: 1px solid transparent;
+  }
+
+  .nav-links a:hover {
+    color: var(--gold);
+    border-color: rgba(201,168,76,0.3);
+    background: rgba(201,168,76,0.05);
+  }
+
+  .nav-version {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    color: var(--gold-dark);
+    cursor: pointer;
+    padding: 4px 10px;
+    border: 1px solid var(--gold-dark);
+    border-radius: 4px;
+    transition: all 0.3s;
+    user-select: none;
+  }
+
+  .nav-version:hover { color: var(--gold); border-color: var(--gold); }
+
+  /* ===== HERO ===== */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 100px 20px 60px;
+    overflow: hidden;
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: pulse-glow 4s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 50px;
+    padding: 6px 18px;
+    font-size: 12px;
+    color: var(--gold);
+    margin-bottom: 30px;
+    animation: fadeInDown 0.8s ease;
+  }
+
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: blink 1.5s infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
+  .hero h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(40px, 8vw, 90px);
+    font-weight: 900;
+    line-height: 1;
+    background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+    animation: fadeInUp 0.8s ease 0.2s both;
+    text-shadow: none;
+  }
+
+  .hero h2 {
+    font-size: clamp(18px, 3vw, 28px);
+    font-weight: 300;
+    color: var(--white);
+    opacity: 0.8;
+    margin-bottom: 20px;
+    animation: fadeInUp 0.8s ease 0.4s both;
+    letter-spacing: 2px;
+  }
+
+  .hero-slogan {
+    font-size: clamp(14px, 2vw, 18px);
+    color: var(--gold);
+    margin-bottom: 50px;
+    animation: fadeInUp 0.8s ease 0.6s both;
+    font-weight: 500;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeInUp 0.8s ease 0.8s both;
+    margin-bottom: 50px;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--gold);
+    display: block;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--gray);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeInUp 0.8s ease 1s both;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    color: var(--black);
+    border: none;
+    padding: 14px 35px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Tajawal', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn-primary:hover::before { left: 100%; }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(201,168,76,0.4); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid var(--gold-dark);
+    padding: 14px 35px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: 'Tajawal', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .btn-secondary:hover {
+    background: rgba(201,168,76,0.1);
+    border-color: var(--gold);
+    transform: translateY(-2px);
+  }
+
+  /* ===== FLASH SALE ===== */
+  .flash-sale {
+    background: linear-gradient(135deg, rgba(201,168,76,0.15), rgba(201,168,76,0.05));
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 16px;
+    padding: 20px 30px;
+    margin: 40px auto;
+    max-width: 700px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .flash-sale::before {
+    content: '⚡ FLASH SALE';
+    position: absolute;
+    top: 10px; left: -30px;
+    background: var(--red);
+    color: white;
+    font-size: 10px;
+    font-weight: 900;
+    padding: 4px 40px;
+    transform: rotate(-45deg);
+    font-family: 'Orbitron', monospace;
+  }
+
+  .flash-text h3 { color: var(--gold); font-size: 18px; margin-bottom: 4px; }
+  .flash-text p { color: var(--gray); font-size: 13px; }
+
+  .countdown {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .count-box {
+    background: var(--dark3);
+    border: 1px solid var(--gold-dark);
+    border-radius: 8px;
+    padding: 8px 14px;
+    text-align: center;
+    min-width: 55px;
+  }
+
+  .count-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--gold);
+    display: block;
+  }
+
+  .count-label {
+    font-size: 9px;
+    color: var(--gray);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .count-sep {
+    font-family: 'Orbitron', monospace;
+    font-size: 20px;
+    color: var(--gold);
+    animation: blink 1s infinite;
+  }
+
+  /* ===== SECTIONS ===== */
+  section {
+    position: relative;
+    z-index: 1;
+    padding: 80px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 60px;
+  }
+
+  .section-tag {
+    display: inline-block;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.3);
+    color: var(--gold);
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 5px 16px;
+    border-radius: 50px;
+    margin-bottom: 16px;
+    font-family: 'Orbitron', monospace;
+  }
+
+  .section-title {
+    font-size: clamp(26px, 4vw, 42px);
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+
+  .section-title .highlight {
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .section-desc {
+    color: var(--gray);
+    font-size: 15px;
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.8;
+  }
+
+  /* ===== CATEGORIES ===== */
+  .categories {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+  }
+
+  .cat-btn {
+    background: var(--dark3);
+    border: 1px solid var(--dark4);
+    color: var(--gray);
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 500;
+  }
+
+  .cat-btn:hover, .cat-btn.active {
+    background: rgba(201,168,76,0.15);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  /* ===== PRODUCTS GRID ===== */
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+  }
+
+  .product-card {
+    background: var(--dark2);
+    border: 1px solid var(--dark4);
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.4s;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .product-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    transform: scaleX(0);
+    transition: transform 0.4s;
+  }
+
+  .product-card:hover {
+    border-color: rgba(201,168,76,0.4);
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 30px rgba(201,168,76,0.08);
+  }
+
+  .product-card:hover::before { transform: scaleX(1); }
+
+  .product-card.featured {
+    border-color: rgba(201,168,76,0.3);
+    background: linear-gradient(135deg, rgba(201,168,76,0.05), var(--dark2));
+  }
+
+  .card-badge {
+    position: absolute;
+    top: 14px; left: 14px;
+    background: var(--red);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 50px;
+    letter-spacing: 1px;
+    font-family: 'Orbitron', monospace;
+  }
+
+  .card-badge.gold-badge {
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    color: var(--black);
+  }
+
+  .card-icon {
+    font-size: 42px;
+    margin-bottom: 16px;
+    display: block;
+    line-height: 1;
+  }
+
+  .card-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--white);
+  }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--gray);
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+
+  .card-price-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+  }
+
+  .card-price {
+    font-family: 'Orbitron', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .card-price span {
+    font-size: 12px;
+    color: var(--gray);
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 400;
+  }
+
+  .card-old-price {
+    font-size: 13px;
+    color: var(--gray);
+    text-decoration: line-through;
+    margin-bottom: 2px;
+  }
+
+  .buy-btn {
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    color: var(--black);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Tajawal', sans-serif;
+    white-space: nowrap;
+  }
+
+  .buy-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(201,168,76,0.4);
+  }
+
+  /* ===== SMM SECTION ===== */
+  .smm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+  }
+
+  .smm-card {
+    background: var(--dark2);
+    border: 1px solid var(--dark4);
+    border-radius: 14px;
+    padding: 20px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .smm-card:hover {
+    border-color: rgba(201,168,76,0.3);
+    transform: translateY(-3px);
+  }
+
+  .smm-platform {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .smm-icon {
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+
+  .smm-platform-name { font-size: 16px; font-weight: 700; }
+  .smm-platform-sub { font-size: 11px; color: var(--gray); }
+
+  .smm-services {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .smm-services li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--gray);
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .smm-services li:last-child { border-bottom: none; }
+
+  .smm-price {
+    color: var(--gold);
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  /* ===== ORDER MODAL ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(10px);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 20px;
+    padding: 35px;
+    width: 100%;
+    max-width: 480px;
+    position: relative;
+    animation: modalIn 0.3s ease;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.9) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 16px; left: 16px;
+    background: var(--dark3);
+    border: 1px solid var(--dark4);
+    color: var(--gray);
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .modal-close:hover { color: var(--red); border-color: var(--red); }
+
+  .modal h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--gold);
+  }
+
+  .modal p { font-size: 13px; color: var(--gray); margin-bottom: 25px; }
+
+  .form-group { margin-bottom: 18px; }
+
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    color: var(--gray);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  .form-group input, .form-group select {
+    width: 100%;
+    background: var(--dark3);
+    border: 1px solid var(--dark4);
+    color: var(--white);
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Tajawal', sans-serif;
+    transition: all 0.3s;
+    outline: none;
+    appearance: none;
+  }
+
+  .form-group input:focus, .form-group select:focus {
+    border-color: var(--gold-dark);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
+  }
+
+  .invoice-box {
+    background: var(--dark3);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 12px;
+    padding: 16px;
+    margin: 20px 0;
+  }
+
+  .invoice-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .invoice-row:last-child {
+    border-bottom: none;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gold);
+    padding-top: 10px;
+    margin-top: 4px;
+  }
+
+  .invoice-row span:first-child { color: var(--gray); }
+
+  .agents-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .agent-card {
+    background: var(--dark3);
+    border: 1px solid var(--dark4);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+  }
+
+  .agent-card:hover, .agent-card.selected {
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.1);
+  }
+
+  .agent-card .agent-emoji { font-size: 28px; display: block; margin-bottom: 6px; }
+  .agent-card .agent-name { font-size: 14px; font-weight: 700; color: var(--white); }
+  .agent-card .agent-status {
+    font-size: 10px;
+    color: var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 4px;
+  }
+
+  .agent-card .agent-status::before {
+    content: '';
+    width: 5px; height: 5px;
+    background: var(--green);
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .confirm-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    color: var(--black);
+    border: none;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Tajawal', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 20px;
+  }
+
+  .confirm-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(201,168,76,0.4);
+  }
+
+  /* ===== FEATURES ===== */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+  }
+
+  .feature-card {
+    background: var(--dark2);
+    border: 1px solid var(--dark4);
+    border-radius: 16px;
+    padding: 28px 24px;
+    text-align: center;
+    transition: all 0.3s;
+  }
+
+  .feature-card:hover {
+    border-color: rgba(201,168,76,0.3);
+    transform: translateY(-3px);
+  }
+
+  .feature-icon {
+    font-size: 36px;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .feature-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--white);
+  }
+
+  .feature-desc {
+    font-size: 13px;
+    color: var(--gray);
+    line-height: 1.7;
+  }
+
+  /* ===== POINTS BANNER ===== */
+  .points-banner {
+    background: linear-gradient(135deg, rgba(201,168,76,0.12), rgba(201,168,76,0.04));
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin: 0 20px;
+  }
+
+  .points-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -10%;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(201,168,76,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .points-banner h2 { font-size: 28px; font-weight: 900; margin-bottom: 12px; }
+  .points-banner p { color: var(--gray); font-size: 15px; max-width: 500px; margin: 0 auto 24px; line-height: 1.8; }
+
+  .points-steps {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-top: 30px;
+  }
+
+  .point-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .step-num {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: rgba(201,168,76,0.2);
+    border: 2px solid var(--gold-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    color: var(--gold);
+    font-size: 16px;
+  }
+
+  .step-text { font-size: 13px; color: var(--gray); text-align: center; max-width: 100px; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    position: relative;
+    z-index: 1;
+    background: var(--dark2);
+    border-top: 1px solid rgba(201,168,76,0.15);
+    padding: 50px 20px 30px;
+    text-align: center;
+  }
+
+  .footer-logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 28px;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+
+  .footer-slogan {
+    color: var(--gray);
+    font-size: 14px;
+    margin-bottom: 30px;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+    list-style: none;
+  }
+
+  .footer-links a {
+    color: var(--gray);
+    text-decoration: none;
+    font-size: 13px;
+    transition: color 0.3s;
+  }
+
+  .footer-links a:hover { color: var(--gold); }
+
+  .footer-copy {
+    font-size: 12px;
+    color: var(--dark4);
+    border-top: 1px solid var(--dark4);
+    padding-top: 20px;
+  }
+
+  /* ===== ADMIN GATE ===== */
+  .admin-chat {
+    display: none;
+    position: fixed;
+    bottom: 80px; left: 20px;
+    width: 340px;
+    background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 16px;
+    overflow: hidden;
+    z-index: 3000;
+    animation: slideUp 0.3s ease;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .admin-chat.open { display: block; }
+
+  .admin-header {
+    background: linear-gradient(135deg, rgba(201,168,76,0.2), rgba(201,168,76,0.05));
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .admin-header-info { display: flex; align-items: center; gap: 10px; }
+  .admin-avatar {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: rgba(201,168,76,0.2);
+    border: 1px solid var(--gold-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .admin-title { font-size: 13px; font-weight: 700; color: var(--gold); }
+  .admin-sub { font-size: 10px; color: var(--gray); }
+
+  .admin-close-btn {
+    background: none;
+    border: none;
+    color: var(--gray);
+    cursor: pointer;
+    font-size: 18px;
+    transition: color 0.2s;
+  }
+
+  .admin-close-btn:hover { color: var(--red); }
+
+  .admin-messages {
+    padding: 16px;
+    height: 200px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .admin-msg {
+    background: var(--dark3);
+    border-radius: 10px 10px 10px 0;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--white);
+    max-width: 85%;
+    line-height: 1.6;
+    border: 1px solid var(--dark4);
+  }
+
+  .admin-msg.user-msg {
+    background: rgba(201,168,76,0.15);
+    border-color: rgba(201,168,76,0.3);
+    border-radius: 10px 10px 0 10px;
+    align-self: flex-end;
+    color: var(--gold);
+  }
+
+  .admin-input-row {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    border-top: 1px solid var(--dark4);
+  }
+
+  .admin-input {
+    flex: 1;
+    background: var(--dark3);
+    border: 1px solid var(--dark4);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--white);
+    font-family: 'Tajawal', sans-serif;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+
+  .admin-input:focus { border-color: var(--gold-dark); }
+
+  .admin-send {
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    color: var(--black);
+    border: none;
+    border-radius: 8px;
+    width: 38px;
+    height: 38px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+  }
+
+  .admin-send:hover { transform: scale(1.1); }
+
+  /* ===== WHATSAPP FAB ===== */
+  .whatsapp-fab {
+    position: fixed;
+    bottom: 25px; left: 25px;
+    width: 55px; height: 55px;
+    background: var(--green);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    cursor: pointer;
+    box-shadow: 0 5px 20px rgba(29,185,84,0.4);
+    z-index: 900;
+    transition: all 0.3s;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  .whatsapp-fab:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 30px rgba(29,185,84,0.6);
+  }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== DIVIDER ===== */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201,168,76,0.2), transparent);
+    margin: 20px 0;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    nav { padding: 0 14px; }
+    .nav-links { display: none; }
+    .hero { padding: 90px 16px 50px; }
+    section { padding: 60px 16px; }
+    .products-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .smm-grid { grid-template-columns: 1fr 1fr; }
+    .features-grid { grid-template-columns: 1fr 1fr; }
+    .agents-grid { grid-template-columns: 1fr 1fr; }
+    .modal { padding: 24px; }
+    .admin-chat { width: calc(100vw - 40px); }
+    .flash-sale { flex-direction: column; text-align: center; }
+  }
+
+  @media (max-width: 480px) {
+    .products-grid { grid-template-columns: 1fr; }
+    .smm-grid { grid-template-columns: 1fr; }
+    .features-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-logo">
+    APEX MATRIX
+    <span>GAMING & DIGITAL SERVICES</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#pubg">ببجي</a></li>
+    <li><a href="#smm">سوشيال</a></li>
+    <li><a href="#features">مميزاتنا</a></li>
+    <li><a href="#points">نقاطك</a></li>
+  </ul>
+  <div class="nav-version" id="versionBtn" title="اضغط 5 مرات">v2.0</div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-badge">المتجر الأول في مصر للخدمات الرقمية</div>
+  <h1>APEX MATRIX</h1>
+  <h2>متجر الخدمات الرقمية</h2>
+  <p class="hero-slogan">سيطّر على اللعبة.. واصنع حضورك أونلاين! ⚡</p>
+
+  <div class="hero-stats">
+    <div class="stat">
+      <span class="stat-num">+5K</span>
+      <span class="stat-label">عميل راضي</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">99%</span>
+      <span class="stat-label">معدل نجاح</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">24/7</span>
+      <span class="stat-label">دعم فوري</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">3min</span>
+      <span class="stat-label">وقت التسليم</span>
+    </div>
+  </div>
+
+  <div class="hero-cta">
+    <button class="btn-primary" onclick="scrollTo('#pubg')">🎮 شحن ببجي دلوقتي</button>
+    <button class="btn-secondary" onclick="scrollTo('#smm')">📈 خدمات السوشيال</button>
+  </div>
+</div>
+
+<!-- FLASH SALE -->
+<div style="max-width:1200px;margin:0 auto;padding:0 20px;">
+  <div class="flash-sale">
+    <div class="flash-text">
+      <h3>⚡ عرض الملوك – 8100 شدة بسعر خيالي!</h3>
+      <p>أكبر باقة شدات بخصم حصري لفترة محدودة جداً</p>
+    </div>
+    <div class="countdown">
+      <div class="count-box">
+        <span class="count-num" id="ch">00</span>
+        <span class="count-label">ساعة</span>
+      </div>
+      <span class="count-sep">:</span>
+      <div class="count-box">
+        <span class="count-num" id="cm">00</span>
+        <span class="count-label">دقيقة</span>
+      </div>
+      <span class="count-sep">:</span>
+      <div class="count-box">
+        <span class="count-num" id="cs">00</span>
+        <span class="count-label">ثانية</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PUBG SECTION -->
+<section id="pubg">
+  <div class="section-header">
+    <div class="section-tag">PUBG MOBILE</div>
+    <h2 class="section-title">شحن <span class="highlight">ببجي موبايل</span></h2>
+    <p class="section-desc">شحن فوري بالـ ID – بدون باسورد – تسليم خلال دقائق</p>
+  </div>
+
+  <div class="products-grid" id="pubgGrid">
+    <div class="product-card" onclick="openOrder('60 شدة (UC)', 25)">
+      <span class="card-icon">💎</span>
+      <div class="card-title">60 شدة (UC)</div>
+      <div class="card-desc">مناسبة للتجربة أو إكمال باقة</div>
+      <div class="card-price-row">
+        <div>
+          <div class="card-price">25 <span>جنيه</span></div>
+        </div>
+        <button class="buy-btn">اشتري الآن</button>
+      </div>
+    </div>
+
+    <div class="product-card" onclick="openOrder('325 شدة (UC)', 100)">
+      <span class="card-icon">💎</span>
+      <div class="card-title">325 شدة (UC)</div>
+      <div class="card-desc">باقة الأساسية للشهر</div>
+      <div class="card-price-row">
+        <div>
+          <div class="card-price">100 <span>جنيه</span></div>
+        </div>
+        <button class="buy-btn">اشتري الآن</button>
+      </div>
+    </div>
+
+    <div class="product-card featured" onclick="openOrder('660 شدة (UC)', 190)">
+      <span class="card-badge gold-badge">⭐ الأكثر طلباً</span>
+      <span class="card-icon">💎</span>
+      <div class="card-title">660 شدة (UC)</div>
+      <div class="card-desc">الخيار الأمثل للجيمرز</div>
+      <div class="card-price-row">
+        <div>
+          <div class="card-price">190 <span>جنيه</span></div>
+        </div>
+        <button class="buy-btn">اشتري الآن</button>
+      </div>
+    </div>
+
+    <div class="product-card" onclick="openOrder('1800 شدة (UC)', 490)">
+      <span class="card-icon">💎</span>
+      <div class="card-title">1800 شدة (UC)</div>
+      <div class="card-desc">باقة الرويال باس والسكنات</div>
+      <div class="card-price-row">
+        <div>
+          <div class="card-price">490 <span>جنيه</span></div>
+        </div>
+        <button class="buy-btn">اشتري الآن</button>
+      </div>
+    </div>
+
+    <div class="product-card" onclick="openOrder('3850 شدة (UC)', 950)">
+      <span class="card-icon">💎</span>
+      <div class="card-title">3850 شدة (UC)</div>
+      <div class="card-desc">للمحترفين اللي بيشتروا كتير</div>
+      <div class="card-price-row">
+        <div>
+          <div class="card-price">950 <span>جنيه</span></div>
+        </div>
+        <button class="buy-btn">اشتري الآن</button>
+      </div>
+    </div>
+
+    <div class="product-card featured" onclick="openOrder('8100 شدة (UC) – عرض الملوك', 1750)">
+      <span class="card-badge" style="background:linear-gradient(135deg,#c9a84c,#8a6a1f);color:#000">👑 عرض الملوك</span>
+      <span class="card-icon">👑</span>
+      <div class="card-title">8100 شدة (UC)</div>
+      <div class="card-desc">أضخم باقة بأفضل سعر في السوق</div>
+      <div class="card-price-row">
+        <div>
+          <div class="card-old-price">2100 جنيه</div>
+          <div class="card-price">1750 <span>جنيه</span></div>
+        </div>
+        <button class="buy-btn">اشتري الآن</button>
+      </div>
+    </div>
+
+    <div class="product-card" onclick="openOrder('عرض الازدهار 1', 60)">
+      <span class="card-icon">🌟</span>
+      <div class="card-title">عرض الازدهار 1</div>
+      <div class="card-desc">العرض المميز الأول</div>
+      <div class="card-price-row">
+        <div>
+          <div class="card-price">60 <span>جنيه</span></div>
+        </div>
+        <button class="buy-btn">اشتري الآن</button>
+      </div>
+    </div>
+
+    <div class="product-card" onclick="openOrder('عرض الازدهار 2', 110)">
+      <span class="card-icon">🌟</span>
+      <div class="card-title">عرض الازدهار 2</div>
+      <div class="card-desc">العرض المميز الثاني</div>
+      <div class="card-price-row">
+        <div>
+          <div class="card-price">110 <span>جنيه</span></div>
+        </div>
+        <button class="buy-btn">اشتري الآن</button>
+      </div>
+    </div>
+
+    <div class="product-card" onclick="openOrder('عرض الازدهار 3', 200)">
+      <span class="card-icon">🌟</span>
+      <div class="card-title">عرض الازدهار 3</div>
+      <div class="card-desc">العرض المميز الثالث</div>
+      <div class="card-price-row">
+        <div>
+          <div class="card-price">200 <span>جنيه</span></div>
+        </div>
+        <button class="buy-btn">اشتري الآن</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider" style="max-width:1200px;margin:0 auto;padding:0 20px;"></div>
+
+<!-- SMM SECTION -->
+<section id="smm">
+  <div class="section-header">
+    <div class="section-tag">SOCIAL MEDIA</div>
+    <h2 class="section-title">خدمات <span class="highlight">السوشيال ميديا</span></h2>
+    <p class="section-desc">زيادة متابعين – لايكات – مشاهدات – تفاعل حقيقي وسريع</p>
+  </div>
+
+  <div class="smm-grid">
+    <div class="smm-card">
+      <div class="smm-platform">
+        <div class="smm-icon" style="background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);">📸</div>
+        <div>
+          <div class="smm-platform-name">انستجرام</div>
+          <div class="smm-platform-sub">Instagram</div>
+        </div>
+      </div>
+      <ul class="smm-services">
+        <li>
+          <span>1000 متابع</span>
+          <button class="buy-btn" style="padding:5px 12px;font-size:11px;" onclick="openOrder('1000 متابع انستجرام', 15)">15 ج</button>
+        </li>
+        <li>
+          <span>5000 متابع</span>
+          <button class="buy-btn" style="padding:5px 12px;font-size:11px;" onclick="openOrder('5000 متابع انستجرام', 60)">60 ج</button>
+        </li>
+        <li>
+          <span>1000 لايك</span>
+          <button class="buy-btn" style="padding:5px 12px;font-size:11px;" onclick="openOrder('1000 لايك انستجرام', 10)">10 ج</button>
+        </li>
+        <li>
+          <span>10K مشاهدة</span>
+          <button class="buy-btn" style="padding:5px 12px;font-size:11px;" onclick="openOrder('10K مشاهدة انستجرام', 12)">12 ج</button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="smm-card">
+      <div class="smm-platform">
+        <div class="smm-icon" style="background:#000;">🎵</div>
+        <div>
+          <div class="smm-platform-name">تيك توك</div>
+          <div class="smm-platform-sub">TikTok</div>
+        </div>
+      </div>
+      <ul class="smm-services">
+        <li>
+          <span>1000 متابع</span>
+          <button class="buy-btn" style="padding:5px 12px;font-size:11px;" onclick="openOrder('1000 متابع تيك توك', 12)">12 ج</button>
+        </li>
+        <li>
+          <span>5000 متابع</span>
+          <button class="buy-btn" style="padding:5px 12px;font-size:11px;" onclick="openOrder('5000 متابع تيك توك', 50)">50 ج</button>
+        </li>
+        <li>
+          <span>10K مشاهدة</span>
+          <button class="buy-btn" style="padding:5px 12px;font-size:11px;" onclick="openOrder('10K مشاهدة تيك توك', 8)">8 ج</button>
+        </li>
+        <li>
+          <span>1000 لايك</span>
+          <button class="buy-btn" style="padding:5px 12px;font-size:11px;" onclick="openOrder('1000 لايك تيك توك', 8)">8 ج</button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="smm-card">
+      <div class="smm-platform">
+        <div class="smm-icon" style="background:#1877f2;">👥</div>
+        <div>
+          <div class="smm-platform-name">فيسبوك</div>
+          <div class="smm-platform-sub">Facebook</div>
+        </div>
+      </div>
+      <ul class="smm-services">
+        <li>
+          <span>1000 متابع صفحة</span>
+          <button class="buy-btn" style="padding:5px 12px;font-size:11px;" onclick="openOrder('1000 متابع فيسبوك', 18)">18 ج</button>
+        </li>
+        <li>
+          <span>1000 لايك صفحة</span>
+          <button class="buy-btn" style="padding:5px 12px;font-size:11px;" onclick="openOrder('1000 لايك فيسبوك', 15)">15 ج</button>
+        </li>
+        <li>
+          <span>1000 مشاهدة فيديو</span>
+          <button class="buy-btn" style="padding:5px 12px;font-size:11px;" onclick="openOrder('1000 مشاهدة فيسبوك', 10)">10 ج</button>
+        </li>
+        <li>
+          <span>تفاعل بوست</span>
+          <button class="buy-btn" style="padding:5px 12px;font-size:11px;" onclick="openOrder('تفاعل بوست فيسبوك', 20)">20 ج</button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="smm-card">
+      <div class="smm-platform">
+        <div class="smm-icon" style="background:#2CA5E0;">✈️</div>
+        <div>
+          <div class="smm-platform-name">تليجرام</div>
+          <div class="smm-platform-sub">Telegram</div>
+        </div>
+      </div>
+      <ul class="smm-services">
+        <li>
+          <span>1000 عضو قناة</span>
+          <button class="buy-btn" style="padding:5px 12px;font-size:11px;" onclick="openOrder('1000 عضو تليجرام', 20)">20 ج</button>
+        </li>
+        <li>
+          <span>5000 عضو قناة</span>
+          <button class="buy-btn" style="padding:5px 12px;font-size:11px;" onclick="openOrder('5000 عضو تليجرام', 80)">80 ج</button>
+        </li>
+        <li>
+          <span>1000 مشاهدة بوست</span>
+          <button class="buy-btn" style="padding:5px 12px;font-size:11px;" onclick="openOrder('1000 مشاهدة تليجرام', 7)">7 ج</button>
+        </li>
+        <li>
+          <span>تصويت استفتاء</span>
+          <button class="buy-btn" style="padding:5px 12px;font-size:11px;" onclick="openOrder('تصويت استفتاء تليجرام', 15)">15 ج</button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="divider" style="max-width:1200px;margin:0 auto;padding:0 20px;"></div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-header">
+    <div class="section-tag">WHY APEX</div>
+    <h2 class="section-title">ليه <span class="highlight">Apex Matrix؟</span></h2>
+    <p class="section-desc">مش بس متجر – ده نظام متكامل لخدمتك</p>
+  </div>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <span class="feature-icon">⚡</span>
+      <div class="feature-title">تسليم فوري</div>
+      <div class="feature-desc">بمجرد الطلب، بيوصلك التأكيد خلال دقائق معدودة</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🔒</span>
+      <div class="feature-title">أمان 100%</div>
+      <div class="feature-desc">شحن بالـ ID فقط – مش محتاج باسورد أو أي بيانات حساسة</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">💰</span>
+      <div class="feature-title">أرخص سعر</div>
+      <div class="feature-desc">أسعارنا مبتتغلبش – مقارنة مستمرة مع السوق</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🎮</span>
+      <div class="feature-title">خبرة حقيقية</div>
+      <div class="feature-desc">فريقنا من الجيمرز اللي بيفهموا احتياجاتك</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🌙</span>
+      <div class="feature-title">دعم 24/7</div>
+      <div class="feature-desc">موجودين معاك في أي وقت حتى لو الساعة 3 الفجر</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">⭐</span>
+      <div class="feature-title">نظام النقاط</div>
+      <div class="feature-desc">كل طلب بيكسبك Apex Points تقدر تستخدمها في خصومات</div>
+    </div>
+  </div>
+</section>
+
+<!-- APEX POINTS -->
+<section id="points" style="padding: 20px;">
+  <div class="points-banner">
+    <div class="section-tag">APEX POINTS</div>
+    <h2>نظام نقاط <span style="background:linear-gradient(135deg,var(--gold-light),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">المكافآت</span></h2>
+    <p>كل ما اشتريت، كل ما كسبت! Apex Points تتراكم مع كل طلب وتقدر تستبدلها بخصومات حصرية</p>
+    <div class="points-steps">
+      <div class="point-step">
+        <div class="step-num">1</div>
+        <div class="step-text">اطلب أي خدمة</div>
+      </div>
+      <div class="point-step">
+        <div class="step-num">2</div>
+        <div class="step-text">اكسب نقاط تلقائياً</div>
+      </div>
+      <div class="point-step">
+        <div class="step-num">3</div>
+        <div class="step-text">استخدم النقاط في خصومات</div>
+      </div>
+      <div class="point-step">
+        <div class="step-num">4</div>
+        <div class="step-text">ارقى لـ VIP وعروض أكبر</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">APEX MATRIX</div>
+  <div class="footer-slogan">سيطّر على اللعبة.. واصنع حضورك أونلاين! ⚡</div>
+  <ul class="footer-links">
+    <li><a href="#pubg">شحن ببجي</a></li>
+    <li><a href="#smm">السوشيال ميديا</a></li>
+    <li><a href="#features">مميزاتنا</a></li>
+    <li><a href="#points">نقاط Apex</a></li>
+  </ul>
+  <div class="footer-copy">© 2025 Apex Matrix – جميع الحقوق محفوظة | تصميم وتطوير: Apex Matrix Team</div>
+</footer>
+
+<!-- WHATSAPP FAB -->
+<div class="whatsapp-fab" onclick="openWA('أهلاً، أنا مهتم بخدماتكم')">💬</div>
+
+<!-- ADMIN CHAT (Hidden Gate) -->
+<div class="admin-chat" id="adminChat">
+  <div class="admin-header">
+    <div class="admin-header-info">
+      <div class="admin-avatar">🛡️</div>
+      <div>
+        <div class="admin-title">Apex Admin Gate</div>
+        <div class="admin-sub">البوابة السرية</div>
+      </div>
+    </div>
+    <button class="admin-close-btn" onclick="closeAdmin()">✕</button>
+  </div>
+  <div class="admin-messages" id="adminMessages">
+    <div class="admin-msg">🛡️ مرحباً بك في البوابة السرية.<br>أدخل رقم المندوب للمتابعة.</div>
+  </div>
+  <div class="admin-input-row">
+    <input type="password" class="admin-input" id="adminInput" placeholder="أدخل الكود..." onkeydown="if(event.key==='Enter')sendAdmin()">
+    <button class="admin-send" onclick="sendAdmin()">→</button>
+  </div>
+</div>
+
+<!-- ORDER MODAL -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeOrder()">✕</button>
+    <h3>🛒 <span id="modalTitle">طلب جديد</span></h3>
+    <p>أكمل بياناتك وسيتم التواصل معك فوراً</p>
+
+    <div class="form-group">
+      <label>🆔 ID اللاعب / رابط الحساب</label>
+      <input type="text" id="playerId" placeholder="مثال: 1234567890">
+    </div>
+
+    <div class="form-group">
+      <label>📱 رقم واتساب للتواصل</label>
+      <input type="tel" id="phoneNum" placeholder="01xxxxxxxxx">
+    </div>
+
+    <div class="invoice-box">
+      <div class="invoice-row">
+        <span>الخدمة</span>
+        <span id="invService" style="color:var(--white)">–</span>
+      </div>
+      <div class="invoice-row">
+        <span>السعر</span>
+        <span id="invPrice" style="color:var(--white)">–</span>
+      </div>
+      <div class="invoice-row">
+        <span>💰 الإجمالي</span>
+        <span id="invTotal">0 جنيه</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>👤 اختر المندوب</label>
+      <div class="agents-grid">
+        <div class="agent-card" id="agent1Card" onclick="selectAgent(1)">
+          <span class="agent-emoji">👨‍💻</span>
+          <div class="agent-name">المندوب الأول</div>
+          <div class="agent-status">متاح الآن</div>
+        </div>
+        <div class="agent-card" id="agent2Card" onclick="selectAgent(2)">
+          <span class="agent-emoji">🧑‍💻</span>
+          <div class="agent-name">المندوب الثاني</div>
+          <div class="agent-status">متاح الآن</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="confirm-btn" onclick="confirmOrder()">
+      ✅ تأكيد الطلب عبر واتساب
+    </button>
+  </div>
+</div>
+
+<script>
+  // ===== AGENTS CONFIG =====
+  // ⚠️ ضع أرقام الواتساب الحقيقية هنا
+  const AGENTS = {
+    1: { name: 'المندوب الأول', phone: '201000000001' },
+    2: { name: 'المندوب الثاني', phone: '201000000002' }
+  };
+
+  // ===== STATE =====
+  let currentService = '';
+  let currentPrice = 0;
+  let selectedAgent = 0;
+
+  // ===== ORDER MODAL =====
+  function openOrder(service, price) {
+    currentService = service;
+    currentPrice = price;
+    selectedAgent = 0;
+    document.getElementById('modalTitle').textContent = service;
+    document.getElementById('invService').textContent = service;
+    document.getElementById('invPrice').textContent = price + ' جنيه';
+    document.getElementById('invTotal').textContent = price + ' جنيه';
+    document.getElementById('playerId').value = '';
+    document.getElementById('phoneNum').value = '';
+    document.getElementById('agent1Card').classList.remove('selected');
+    document.getElementById('agent2Card').classList.remove('selected');
+    document.getElementById('orderModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeOrder() {
+    document.getElementById('orderModal').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  function selectAgent(num) {
+    selectedAgent = num;
+    document.getElementById('agent1Card').classList.toggle('selected', num === 1);
+    document.getElementById('agent2Card').classList.toggle('selected', num === 2);
+  }
+
+  function confirmOrder() {
+    const id = document.getElementById('playerId').value.trim();
+    const phone = document.getElementById('phoneNum').value.trim();
+
+    if (!id) { alert('⚠️ من فضلك أدخل ID اللاعب أو رابط الحساب'); return; }
+    if (!phone) { alert('⚠️ من فضلك أدخل رقم الواتساب'); return; }
+    if (!selectedAgent) { alert('⚠️ من فضلك اختر المندوب'); return; }
+
+    const agent = AGENTS[selectedAgent];
+    const msg = `🛒 *طلب جديد – Apex Matrix*\n\n` +
+      `📦 *الخدمة:* ${currentService}\n` +
+      `💰 *السعر:* ${currentPrice} جنيه\n` +
+      `🆔 *ID / الرابط:* ${id}\n` +
+      `📱 *واتساب العميل:* ${phone}\n\n` +
+      `⚡ مرسل من متجر Apex Matrix`;
+
+    const url = `https://wa.me/${agent.phone}?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+    closeOrder();
+  }
+
+  // ===== WHATSAPP =====
+  function openWA(msg) {
+    window.open(`https://wa.me/${AGENTS[1].phone}?text=${encodeURIComponent(msg)}`, '_blank');
+  }
+
+  // ===== SMOOTH SCROLL =====
+  function scrollTo(id) {
+    document.querySelector(id).scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // ===== COUNTDOWN FLASH SALE =====
+  function startCountdown() {
+    let now = new Date();
+    let end = new Date();
+    end.setHours(23, 59, 59, 0);
+    if (now > end) end.setDate(end.getDate() + 1);
+
+    setInterval(() => {
+      const diff = end - new Date();
+      if (diff <= 0) return;
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      document.getElementById('ch').textContent = String(h).padStart(2,'0');
+      document.getElementById('cm').textContent = String(m).padStart(2,'0');
+      document.getElementById('cs').textContent = String(s).padStart(2,'0');
+    }, 1000);
+  }
+  startCountdown();
+
+  // ===== ADMIN GATE (Secret: click v5 times) =====
+  let versionClicks = 0;
+  let versionTimer = null;
+  let adminStep = 0;
+  const AGENT_CODE = '2992007';
+  const ADMIN_PASS = 'apex2025';
+
+  document.getElementById('versionBtn').addEventListener('click', () => {
+    versionClicks++;
+    clearTimeout(versionTimer);
+    versionTimer = setTimeout(() => { versionClicks = 0; }, 2000);
+    if (versionClicks >= 5) {
+      versionClicks = 0;
+      openAdminChat();
+    }
+  });
+
+  function openAdminChat() {
+    adminStep = 1;
+    document.getElementById('adminChat').classList.add('open');
+    addAdminMsg('🛡️ مرحباً! أدخل رقم المندوب للمتابعة.');
+  }
+
+  function closeAdmin() {
+    document.getElementById('adminChat').classList.remove('open');
+    adminStep = 0;
+    document.getElementById('adminMessages').innerHTML = '';
+    addAdminMsg('🛡️ مرحباً بك في البوابة السرية.<br>أدخل رقم المندوب للمتابعة.');
+  }
+
+  function addAdminMsg(text, isUser = false) {
+    const msgs = document.getElementById('adminMessages');
+    const div = document.createElement('div');
+    div.className = 'admin-msg' + (isUser ? ' user-msg' : '');
+    div.innerHTML = text;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function sendAdmin() {
+    const input = document.getElementById('adminInput');
+    const val = input.value.trim();
+    if (!val) return;
+    addAdminMsg(val, true);
+    input.value = '';
+
+    setTimeout(() => {
+      if (adminStep === 1) {
+        if (val === AGENT_CODE) {
+          adminStep = 2;
+          addAdminMsg('✅ رقم المندوب صحيح!<br>الآن أدخل كلمة السر.');
+        } else {
+          addAdminMsg('❌ رقم المندوب غير صحيح. حاول مرة ثانية.');
+        }
+      } else if (adminStep === 2) {
+        if (val === ADMIN_PASS) {
+          adminStep = 3;
+          addAdminMsg('🎉 مرحباً يا ماتريكس!<br>وصلت للوحة التحكم.<br>✅ النظام يعمل بشكل مثالي.<br><br>📊 إجمالي الطلبات: 127<br>💰 الأرباح اليوم: 3,450 ج<br>✅ طلبات ناجحة: 119<br>⏳ معلقة: 6<br>↩️ مرجعة: 2');
+        } else {
+          addAdminMsg('❌ كلمة السر غير صحيحة!');
+          adminStep = 1;
+        }
+      } else {
+        addAdminMsg('💬 أنت بالفعل داخل لوحة التحكم. للخروج اضغط ✕');
+      }
+    }, 400);
+  }
+
+  // ===== CLOSE MODAL ON OUTSIDE CLICK =====
+  document.getElementById('orderModal').addEventListener('click', function(e) {
+    if (e.target === this) closeOrder();
+  });
+</script>
+</body>
+</html>
